@@ -14,21 +14,23 @@ First, you'll need to install:
  - selenium webdriver
 
 Next, clone or download the repository and extract the fntsylu folder. Now, open up the fntsylu.py file in any text editor and edit the following"
- > def login(self):
-	   driver = self.driver
-		  username = ""  # Insert your email here
-		  password = ""  # Insert your password
-		  wait = WebDriverWait(driver, 10)
-    // rest of the code
-
+'''python
+ def login(self):
+   driver = self.driver
+   username = ""  # Insert your email here
+   password = ""  # Insert your password
+   wait = WebDriverWait(driver, 10)
+   // rest of the code
+'''
 Before you edit this code, you'll need to create a gmail account that will notify you when there are players still on your bench. After you create the email, go back into the fntsylu.py file and edit the sendEmail function:
+'''python
+ def sendEmail(self, players):
+   // some code ///
+   email = ""          # Insert the email you just created
+   password = ""       # Insert the password for the email you just created
+   recipientEmail = "" # Insert the email you want to be notified (your personal email)
+'''
 
- > def sendEmail(self, players):
-    // some code ///
-		  email = ""          # Insert the email you just created
-		  password = ""       # Insert the password for the email you just created
-		  recipientEmail = "" # Insert the email you want to be notified (your email)
-    
 Then go to your command line and change directory to said folder. Then type the following:
  > python fntsylu.py 'Insert league ID' 'Insert team id'
  
