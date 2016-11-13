@@ -13,7 +13,7 @@ First, you'll need to install:
  - google-chrome
  - selenium webdriver
 
-Next, clone or download the repository and extract the fntsylu folder. Now, open up the fntsylu.py file in any text editor and edit the following"
+Next, clone or download the repository and extract the fntsylu folder. Now, open up the fntsylu.py file in any text editor and edit the following:
 ```python
  def login(self):
    // some code //
