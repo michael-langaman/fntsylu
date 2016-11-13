@@ -52,6 +52,31 @@ class fntsyLu(unittest.TestCase):
 		name = nameElement.get_attribute('text')
 		return name
 
+	def getOwnerName(self):
+		driver = self.driver
+		wait = WebDriverWait(driver, 10)
+		ownerNameElement = wait.until(lambda driver: driver.find_element_by_xpath('//*[@id="content"]/div/div[4]/div/div/div[3]/div[1]/div[2]/div[1]/ul[2]/li[1]'))
+		ownerNameHTML = ownerNameElement.get_attribute('outerHTML')
+		ownerName = ownerNameHTML.split('>', 1)[1].split('<', 1)[0].split(' ', 1)[0]
+		return ownerName
+
+	def getTeamName(self):
+		driver = self.driver
+		wait = WebDriverWait(driver, 10)
+		teamNameElement = wait.until(lambda driver: driver.find_element_by_class_name('team-name'))
+		teamNameHTML = teamNameElement.get_attribute('innerHTML')
+		teamName = teamNameHTML.split('<e', 1)[0]
+		teamName.replace(' ', '')
+		return teamName
+
+	def getLeagueName(self):
+		driver = self.driver
+		wait = WebDriverWait(driver, 10)
+		leagueNameElement = wait.until(lambda driver: driver.find_element_by_xpath('//*[@id="content"]/div/div[4]/div/div/div[3]/div[1]/div[2]/div[1]/ul[1]/li/a'))
+		leagueNameHTML = leagueNameElement.get_attribute('innerHTML')
+		leagueName = leagueNameHTML.split('<strong>', 1)[1].split('</strong>', 1)[0]
+		return leagueName
+
 	def setPlayerList(self):
 		driver = self.driver
 		elements = driver.find_elements_by_class_name("playertablePlayerName")
@@ -69,22 +94,17 @@ class fntsyLu(unittest.TestCase):
 		benchPlayerList = []
 		benchPlayerGameStatuses = []
 		count = 0
-		print playerList
 		for i in range(10, 13, 1):
-			print i
 			str = "pncPlayerRow_" + self.getNumber(i)
 			playerGameStatus = "//*[@id=" + "\'" + str + "\'" + "]/td[6]/a"
 			benchPlayerGameStatuses.insert(count, self.hasGame(playerGameStatus))
 			playerName = "//*[@id=" + '\'' + 'playername_' + playerList[i] + '\'' + ']/a[1]'
 			newsXPath = "'//*[@id=" '\'' + "playername_" + playerList[i] + '\'' + "]/a[2]/img"
 			if benchPlayerGameStatuses[count] == True:
-				print self.hasGame(newsXPath)
 				if not self.hasGame(newsXPath):
 					benchPlayerList.insert(count, self.getName(playerName))
 				else:
-					print "NO NEWS"
 					playerName = "//*[@id=" + '\'' + 'playername_' + playerList[i] + '\'' + ']/a'
-					print playerName
 					benchPlayerList.insert(count, self.getName(playerName))
 			count += 1;
 		return benchPlayerList
@@ -93,8 +113,8 @@ class fntsyLu(unittest.TestCase):
 		emailServer = smtplib.SMTP('smtp.gmail.com', 587)
 		emailServer.ehlo()
 		emailServer.starttls()
-		email = "INSERT EMAIL HERE"
-		password = "INSERT PASSWORD HERE"
+		email = "INSERT EMAIL"
+		password = "INSERT PASSWORD"
 		recipientEmail = "INSERT RECIPIENT EMAIL"
 		emailServer.login(email, password)
 		str = ""
@@ -102,13 +122,13 @@ class fntsyLu(unittest.TestCase):
 			str += players[i]
 			if i != len(players) - 1:
 				str += ", "
-		emailBody = '\nCould not get ' + str + ' into your starting lineup even though he has a game. '
+		emailBody = emailBody = '\nHey ' + self.getOwnerName() + ', there was an issue with setting your lineup for ' + self.getTeamName() + '. Could not get ' + str + ' into your starting lineup even though he has a game.'
 		if len(players) > 1:
-			emailBody = '\nCould not get ' + str + ' into your starting lineup even though they have games.'
+			emailBody = '\nHey ' + self.getOwnerName() + ', there was an issue with setting your lineup for ' + self.getTeamName() + '. Could not get ' + str + ' into your starting lineup even though they have games.'
 		emailServer.sendmail(email, recipientEmail,
-			'Subject: FANTASY LINEUP ISSUE' + '\n' + emailBody)
+			'Subject: FANTASY LINEUP ISSUE in ' + self.getLeagueName() + '\n' + emailBody)
 		emailServer.quit()
-		# print "Email Sent!"
+		print "Email Sent!"
 
 	def moveToPosition(self, num, num2):
 		driver = self.driver
@@ -117,41 +137,36 @@ class fntsyLu(unittest.TestCase):
 		rowGameStatusStr = "//*[@id=" + "\'" + rowGameStatus + "\'" + "]/td[6]/a"
 		if self.hasGame(rowGameStatusStr):
 			if num == 0 or num == 1:
-				self.moveToPosition(5, num2)
-				return
+				return self.moveToPosition(5, num2)
 			elif num == 2 or num == 3:
-				self.moveToPosition(6, num2)
-				return
+				return self.moveToPosition(6, num2)
 			elif num > 3:
 				str = "pncButtonMoveSelected_" + playerList[num2]
 				moveButton = "//*[@id=" + '\'' + str + '\'' + "]"
 				moveButtonElement = wait.until(lambda driver: driver.find_element_by_xpath(moveButton))
 				moveButtonElement.click()
-			return
+				time.sleep(2)
+				return False
 		else:
 			str = "pncButtonHere_" + self.getNumber(num)
 			position = "//*[@id=" + '\'' + str + '\'' + "]"
 			positionButton = wait.until(lambda driver:driver.find_element_by_xpath(position))
 			positionButton.click()
-		return
+			return True
+		return False
 
 	def movePlayerToPosition(self, positionList,  num):
 		for i in range(0, len(positionList), 1):
 			if positionList[i] == "PG":
-				self.moveToPosition(0, num)
-				return True
+				return self.moveToPosition(0, num)
 			elif positionList[i] == "SG":
-				self.moveToPosition(1, num)
-				return True 
+				return self.moveToPosition(1, num)
 			elif positionList[i] == "SF":
-				self.moveToPosition(2, num)
-				return True
+				return self.moveToPosition(2, num)
 			elif positionList[i] == "PF":
-				self.moveToPosition(3, num)
-				return True 
+				return self.moveToPosition(3, num)
 			elif positionList[i] == "C":
-				self.moveToPosition(4, num)
-				return True
+				return self.moveToPosition(4, num)
 		return False
 
 	def submitLineUp(self):
@@ -261,7 +276,7 @@ class fntsyLu(unittest.TestCase):
 			pass
 
 		row8Strings = self.initializeMoveStrings(8)
-		self.movePlayer(row8Strings[0], row7Strings[1], 8)
+		self.movePlayer(row8Strings[0], row8Strings[1], 8)
 		if self.movePlayerToSL(8):
 			pass
 
@@ -269,16 +284,14 @@ class fntsyLu(unittest.TestCase):
 		self.movePlayer(row9Strings[0], row9Strings[1], 9)
 		if self.movePlayerToSL(9):
 			pass
-		else:
-			return
 
 		self.checkBench()
 
 	def login(self):
 		# initialize variables
 		driver = self.driver
-		username = "INSERT USERNAME"
-		password = "INSERT PASSWORD"
+		username = ""
+		password = ""
 		wait = WebDriverWait(driver, 10)
 
 		# click Log In button
@@ -326,14 +339,20 @@ class fntsyLu(unittest.TestCase):
 		driver = self.driver
 		wait = WebDriverWait(driver, 10)
 		time.sleep(2)
+		nextDay = '//*[@id="content"]/div/div[4]/div/div/div[3]/div[1]/div[5]/ul/li[4]/a'
+		nextDayElement = wait.until(lambda driver: driver.find_element_by_xpath(nextDay))
+		nextDayElement.click()
+		time.sleep(2)
 		self.setPlayerList()
 		self.checkBench()
 		benchList = self.getBenchList()
 		if len(benchList) > 0:
 			self.checkUtil()
+			benchList = self.getBenchList()
+
+		if len(benchList) > 0:
 			self.sendEmail(benchList)
-		else:
-			pass
+
 		time.sleep(2)
 		self.tearDown()
 
