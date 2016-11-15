@@ -30,7 +30,7 @@ class fntsyLu(unittest.TestCase):
 		playerPositionText = "//*[@id=" + '\'' + str + '\'' + "]"
 		playerPositionTextElement = wait.until(lambda driver:driver.find_element_by_xpath(playerPositionText))
 		playerHTML = playerPositionTextElement.get_attribute('innerHTML')
-		positions = re.findall('PG|SG|SF|PF|\sC\s', playerHTML)
+		positions = re.findall('PG|SG|SF|PF|\sC|C\s', playerHTML)
 		return positions
 
 	def hasGame(self, str):
@@ -113,11 +113,11 @@ class fntsyLu(unittest.TestCase):
 		emailServer = smtplib.SMTP('smtp.gmail.com', 587)
 		emailServer.ehlo()
 		emailServer.starttls()
-		email = "INSERT EMAIL"
-		password = "INSERT PASSWORD"
-		recipientEmail = "INSERT RECIPIENT EMAIL"
+		email = ""   			# Insert email you created here
+		password = ""			# Insert password for email here
+		recipientEmail = ""		# Insert your personal email here
 		emailServer.login(email, password)
-		str = ""
+		str = ""g
 		for i in range(0, len(players), 1):
 			str += players[i]
 			if i != len(players) - 1:
@@ -128,7 +128,6 @@ class fntsyLu(unittest.TestCase):
 		emailServer.sendmail(email, recipientEmail,
 			'Subject: FANTASY LINEUP ISSUE in ' + self.getLeagueName() + '\n' + emailBody)
 		emailServer.quit()
-		print "Email Sent!"
 
 	def moveToPosition(self, num, num2):
 		driver = self.driver
@@ -290,8 +289,8 @@ class fntsyLu(unittest.TestCase):
 	def login(self):
 		# initialize variables
 		driver = self.driver
-		username = ""
-		password = ""
+		username = "" 		# Insert your username here
+		password = ""		# Insert your password here
 		wait = WebDriverWait(driver, 10)
 
 		# click Log In button
@@ -339,20 +338,19 @@ class fntsyLu(unittest.TestCase):
 		driver = self.driver
 		wait = WebDriverWait(driver, 10)
 		time.sleep(2)
-		nextDay = '//*[@id="content"]/div/div[4]/div/div/div[3]/div[1]/div[5]/ul/li[4]/a'
-		nextDayElement = wait.until(lambda driver: driver.find_element_by_xpath(nextDay))
-		nextDayElement.click()
-		time.sleep(2)
 		self.setPlayerList()
 		self.checkBench()
 		benchList = self.getBenchList()
 		if len(benchList) > 0:
 			self.checkUtil()
 			benchList = self.getBenchList()
+		else: 
+			pass
 
 		if len(benchList) > 0:
 			self.sendEmail(benchList)
-
+		else:
+			pass
 		time.sleep(2)
 		self.tearDown()
 
