@@ -5,6 +5,11 @@ This is my script to set my ESPN Fantasy Basketball lineup daily. Not fully auto
 the bench and into the starting lineup if all the spots are taken, and of course, the players in those spots have games.
 In that case, the script sends me an email with the names of the players who were unable to be added to the lineup.
 
+# To Do:
+ - functionality to set lineup when there are more than 3 players on the bench (currently implementing now)
+ - accounting for injured players
+ - comparing players stats/averages when there are not enough spaces in the starting lineup
+
 # How to use
 
 First, you'll need to install:
