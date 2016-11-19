@@ -30,7 +30,7 @@ class fntsyLu(unittest.TestCase):
 		playerPositionText = "//*[@id=" + '\'' + str + '\'' + "]"
 		playerPositionTextElement = wait.until(lambda driver:driver.find_element_by_xpath(playerPositionText))
 		playerHTML = playerPositionTextElement.get_attribute('innerHTML')
-		positions = re.findall('PG|SG|SF|PF|\sC|C\s', playerHTML)
+		positions = re.findall('PG|SG|SF|PF|\sC\s|C\s|;C', playerHTML)
 		return positions
 
 	def hasGame(self, str):
@@ -77,6 +77,30 @@ class fntsyLu(unittest.TestCase):
 		leagueName = leagueNameHTML.split('<strong>', 1)[1].split('</strong>', 1)[0]
 		return leagueName
 
+	def checkRow13(self):
+		driver = self.driver
+		wait = WebDriverWait(driver, 10)
+		try:
+			ir = '//*[@id="pncSlot_13"]'
+			irElement = wait.until(lambda driver : driver.find_element_by_xpath(ir))
+			irHTML = irElement.get_attribute('outerHTML')
+			findIR = re.findall('IR', irHTML)
+			if len(findIR) > 0:
+				return True
+		except TimeoutException:
+			return False 
+		return False
+
+	def getNumOfRows(self):
+		driver = self.driver
+		wait = WebDriverWait(driver, 10)
+		rows = wait.until(lambda driver: driver.find_elements_by_class_name("playerEditSlot"))
+		if(len(rows) - 1 == 14) and self.checkRow13():
+			return len(rows) - 2
+		else:
+			pass
+		return len(rows) - 1
+
 	def setPlayerList(self):
 		driver = self.driver
 		elements = driver.find_elements_by_class_name("playertablePlayerName")
@@ -98,13 +122,18 @@ class fntsyLu(unittest.TestCase):
 			str = "pncPlayerRow_" + self.getNumber(i)
 			playerGameStatus = "//*[@id=" + "\'" + str + "\'" + "]/td[6]/a"
 			benchPlayerGameStatuses.insert(count, self.hasGame(playerGameStatus))
-			playerName = "//*[@id=" + '\'' + 'playername_' + playerList[i] + '\'' + ']/a[1]'
-			newsXPath = "'//*[@id=" '\'' + "playername_" + playerList[i] + '\'' + "]/a[2]/img"
+			if self.getNumOfRows() > 13:
+				x = self.getNumOfRows() - 13
+				num = i - x
+			else:
+				num = i
+			playerName = "//*[@id=" + '\'' + 'playername_' + playerList[num] + '\'' + ']/a[1]'
+			newsXPath = "'//*[@id=" '\'' + "playername_" + playerList[num] + '\'' + "]/a[2]/img"
 			if benchPlayerGameStatuses[count] == True:
 				if not self.hasGame(newsXPath):
 					benchPlayerList.insert(count, self.getName(playerName))
 				else:
-					playerName = "//*[@id=" + '\'' + 'playername_' + playerList[i] + '\'' + ']/a'
+					playerName = "//*[@id=" + '\'' + 'playername_' + playerList[num] + '\'' + ']/a'
 					benchPlayerList.insert(count, self.getName(playerName))
 			count += 1;
 		return benchPlayerList
@@ -113,11 +142,11 @@ class fntsyLu(unittest.TestCase):
 		emailServer = smtplib.SMTP('smtp.gmail.com', 587)
 		emailServer.ehlo()
 		emailServer.starttls()
-		email = ""   			# Insert email you created here
-		password = ""			# Insert password for email here
-		recipientEmail = ""		# Insert your personal email here
+		email = ""   		# Insert email you created here
+		password = ""		# Insert password for email here
+		recipientEmail = "" # Insert your personal email here
 		emailServer.login(email, password)
-		str = ""g
+		str = ""
 		for i in range(0, len(players), 1):
 			str += players[i]
 			if i != len(players) - 1:
@@ -129,23 +158,24 @@ class fntsyLu(unittest.TestCase):
 			'Subject: FANTASY LINEUP ISSUE in ' + self.getLeagueName() + '\n' + emailBody)
 		emailServer.quit()
 
-	def moveToPosition(self, num, num2):
+	def clickHereOnPosition(self, num, num2, count):
 		driver = self.driver
 		wait = WebDriverWait(driver, 10)
 		rowGameStatus = "pncPlayerRow_" + self.getNumber(num)
 		rowGameStatusStr = "//*[@id=" + "\'" + rowGameStatus + "\'" + "]/td[6]/a"
 		if self.hasGame(rowGameStatusStr):
+			positionList = self.getPosition(num2)
 			if num == 0 or num == 1:
-				return self.moveToPosition(5, num2)
+				return self.clickHereOnPosition(5, num2, count)
 			elif num == 2 or num == 3:
-				return self.moveToPosition(6, num2)
-			elif num > 3:
+				return self.clickHereOnPosition(6, num2, count)
+			elif num > 3 and count == len(positionList):
 				str = "pncButtonMoveSelected_" + playerList[num2]
 				moveButton = "//*[@id=" + '\'' + str + '\'' + "]"
 				moveButtonElement = wait.until(lambda driver: driver.find_element_by_xpath(moveButton))
 				moveButtonElement.click()
-				time.sleep(2)
 				return False
+			return False
 		else:
 			str = "pncButtonHere_" + self.getNumber(num)
 			position = "//*[@id=" + '\'' + str + '\'' + "]"
@@ -154,18 +184,35 @@ class fntsyLu(unittest.TestCase):
 			return True
 		return False
 
-	def movePlayerToPosition(self, positionList,  num):
+	def toPosition(self, positionList, num):
+		count = 0
 		for i in range(0, len(positionList), 1):
+			count += 1
 			if positionList[i] == "PG":
-				return self.moveToPosition(0, num)
+				if self.clickHereOnPosition(0, num, count):
+					return True
+				else: 
+					pass
 			elif positionList[i] == "SG":
-				return self.moveToPosition(1, num)
+				if self.clickHereOnPosition(1, num, count):
+					return True
+				else: 
+					pass
 			elif positionList[i] == "SF":
-				return self.moveToPosition(2, num)
+				if self.clickHereOnPosition(2, num, count):
+					return True
+				else:
+					pass
 			elif positionList[i] == "PF":
-				return self.moveToPosition(3, num)
-			elif positionList[i] == "C":
-				return self.moveToPosition(4, num)
+				if self.clickHereOnPosition(3, num, count):
+					return True
+				else:
+					pass
+			elif positionList[i] == "C" or positionList[i] == ";C":
+				if self.clickHereOnPosition(4, num, count):
+					return True
+				else: 
+					pass
 		return False
 
 	def submitLineUp(self):
@@ -177,29 +224,21 @@ class fntsyLu(unittest.TestCase):
 		time.sleep(2)
 		self.setPlayerList()
 
-	def movePlayerToSL(self, num):
+	def toSL(self, num):
 		driver = self.driver
 		wait = WebDriverWait(driver, 10)
 		positionList = self.getPosition(num)
-		if num == 12:
-			self.movePlayerToPosition(positionList, num)
-			self.submitLineUp()
-			return True
-		return self.movePlayerToPosition(positionList, num)
+		return self.toPosition(positionList, num)
 
-	def movePlayerToUtil(self, str, str2, num, num2):
+	def clickHereOnUtil(self, str, str2, num, num2):
 		driver = self.driver 
 		wait = WebDriverWait(driver, 10)
-
 		if self.hasGame(str):
-			if num2 == 9:
-				self.movePlayerToSL(num)
-			return False 
+			if num2 == 9 and len(self.getBenchList()) > 0:
+				return self.toSL(num)
 		else:
 			buttonElement = wait.until(lambda driver: driver.find_element_by_xpath(str2))
 			buttonElement.click()
-			if num == 12:
-				self.submitLineUp()
 			return True
 		return False
 
@@ -212,30 +251,22 @@ class fntsyLu(unittest.TestCase):
 		stringList = [playerRowGameStatus, playerRowButton]
 		return stringList
 
-	def moveToUtil(self, num):
-		# Check UTIL - table rows 7, 8, 9
+	def toUtil(self, num):
 		driver = self.driver
 		wait = WebDriverWait(driver, 10)
-
-		row7Strings = self.initializeHereStrings(7)
-		if self.movePlayerToUtil(row7Strings[0], row7Strings[1], num, 7):
-			return
-		
-		row8Strings = self.initializeHereStrings(8)
-		if self.movePlayerToUtil(row8Strings[0], row8Strings[1], num, 8):
-			return
-
-		row9Strings = self.initializeHereStrings(9)
-		if self.movePlayerToUtil(row9Strings[0], row9Strings[1], num, 9):
-			return
-		
+		for i in range(7, 10, 1):
+			utilHereStrings = self.initializeHereStrings(i)
+			if self.clickHereOnUtil(utilHereStrings[0], utilHereStrings[1], num, i):
+				return
+			else:
+				pass
 		return
 
-	def initializeMoveStrings(self, num):
+	def initializeMoveStrings(self, num, num2):
 		stringList = []
 		playerRow = "pncPlayerRow_" + self.getNumber(num)
 		playerRowGameStatus = "//*[@id=" + '\'' + playerRow + '\'' + "]/td[6]/a"
-		move = "pncButtonMove_" + playerList[num]
+		move = "pncButtonMove_" + playerList[num2]
 		playerRowButton = "//*[@id=" + '\'' + move + '\'' + "]"
 		stringList = [playerRowGameStatus, playerRowButton]
 		return stringList
@@ -246,44 +277,33 @@ class fntsyLu(unittest.TestCase):
 		if self.hasGame(str):
 			buttonElement = wait.until(lambda driver: driver.find_element_by_xpath(str2))
 			buttonElement.click()
-			if num == 10 or num == 11 or num == 12:
-				self.moveToUtil(num)
-		elif not self.hasGame(str):
-			if num == 12:
-				self.submitLineUp()
+			if self.getNumOfRows() > 13 and num > self.getNumOfRows() - 13:
+				self.toUtil(num)
+			elif num > 9:
+				self.toUtil(num)
 			else:
-				pass
+				self.toSL(num)
+		else:
+			pass
 
 	def checkBench(self):
 		driver = self.driver
 		wait = WebDriverWait(driver, 10)
-		
-		row10Strings = self.initializeMoveStrings(10)
-		self.movePlayer(row10Strings[0], row10Strings[1], 10)
-
-		row11Strings = self.initializeMoveStrings(11)
-		self.movePlayer(row11Strings[0], row11Strings[1], 11)
-	
-		row12Strings = self.initializeMoveStrings(12)
-		self.movePlayer(row12Strings[0], row12Strings[1], 12)
+		for i in range(10, self.getNumOfRows(), 1):
+			if self.getNumOfRows() > 13:
+				x = self.getNumOfRows() - 13
+				num = i - x
+			else:
+				num = i
+			rowStrings = self.initializeMoveStrings(i, num)
+			self.movePlayer(rowStrings[0], rowStrings[1], num)
 
 	def checkUtil(self):
-		self.setPlayerList()
-		row7Strings = self.initializeMoveStrings(7)
-		self.movePlayer(row7Strings[0], row7Strings[1], 7)
-		if self.movePlayerToSL(7):
-			pass
-
-		row8Strings = self.initializeMoveStrings(8)
-		self.movePlayer(row8Strings[0], row8Strings[1], 8)
-		if self.movePlayerToSL(8):
-			pass
-
-		row9Strings = self.initializeMoveStrings(9)
-		self.movePlayer(row9Strings[0], row9Strings[1], 9)
-		if self.movePlayerToSL(9):
-			pass
-
+		self.submitLineUp()
+		for i in range(7, 10, 1):
+			num = i
+			utilStrings = self.initializeMoveStrings(i, i)
+			self.movePlayer(utilStrings[0], utilStrings[1], num)
 		self.checkBench()
 
 	def login(self):
@@ -342,15 +362,20 @@ class fntsyLu(unittest.TestCase):
 		self.checkBench()
 		benchList = self.getBenchList()
 		if len(benchList) > 0:
+			self.setPlayerList()
 			self.checkUtil()
-			benchList = self.getBenchList()
-		else: 
-			pass
-
-		if len(benchList) > 0:
-			self.sendEmail(benchList)
+			self.submitLineUp()
+			newBenchList = self.getBenchList()
 		else:
 			pass
+
+
+		if len(benchList) > 0:
+			self.sendEmail(newBenchList)
+		else:
+			pass
+
+		self.submitLineUp()
 		time.sleep(2)
 		self.tearDown()
 
