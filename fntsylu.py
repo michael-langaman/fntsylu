@@ -11,10 +11,12 @@ import re
 
 
 class fntsyLu(unittest.TestCase):
+	# Sets up the chrome driver
 	def setUp(self):
 		self.driver = webdriver.Chrome()
 		self.driver.get("http://www.espn.com/fantasy/basketball/")
-
+	
+	# Method to return the row number of the player 
 	def getNumber(self, num):
 		driver = self.driver
 		wait = WebDriverWait(driver, 10)
@@ -22,7 +24,8 @@ class fntsyLu(unittest.TestCase):
 		str = elements[num].get_attribute('id')
 		playerNum = re.findall('\d+', str)
 		return playerNum[0]
-
+	
+	# Returns the list of positions of a player
 	def getPosition(self, num):
 		driver = self.driver
 		wait = WebDriverWait(driver, 10)
@@ -33,6 +36,7 @@ class fntsyLu(unittest.TestCase):
 		positions = re.findall('PG|SG|SF|PF|\sC\s|C\s|;C', playerHTML)
 		return positions
 
+	# Checks if a player has a game scheduled for today
 	def hasGame(self, str):
 		driver = self.driver
 		wait = WebDriverWait(driver, 10)
@@ -45,6 +49,7 @@ class fntsyLu(unittest.TestCase):
 
 		return hasGame
 
+	# Returns the player's name
 	def getName(self, str):
 		driver = self.driver
 		wait = WebDriverWait(driver, 10)
@@ -52,6 +57,7 @@ class fntsyLu(unittest.TestCase):
 		name = nameElement.get_attribute('text')
 		return name
 
+	# Returns the owner of the team's name
 	def getOwnerName(self):
 		driver = self.driver
 		wait = WebDriverWait(driver, 10)
@@ -60,6 +66,7 @@ class fntsyLu(unittest.TestCase):
 		ownerName = ownerNameHTML.split('>', 1)[1].split('<', 1)[0].split(' ', 1)[0]
 		return ownerName
 
+	# Returns name of the team
 	def getTeamName(self):
 		driver = self.driver
 		wait = WebDriverWait(driver, 10)
@@ -69,6 +76,7 @@ class fntsyLu(unittest.TestCase):
 		teamName.replace(' ', '')
 		return teamName
 
+	# Returns league name
 	def getLeagueName(self):
 		driver = self.driver
 		wait = WebDriverWait(driver, 10)
@@ -77,6 +85,7 @@ class fntsyLu(unittest.TestCase):
 		leagueName = leagueNameHTML.split('<strong>', 1)[1].split('</strong>', 1)[0]
 		return leagueName
 
+	# Checks is row 13 is an Injury-Reserve row. 
 	def checkRow13(self):
 		driver = self.driver
 		wait = WebDriverWait(driver, 10)
@@ -91,6 +100,9 @@ class fntsyLu(unittest.TestCase):
 			return False 
 		return False
 
+	# Returns the num of rows. Will most likely return 13, but if there are more than 3 players on the bench the number will
+	# always be greater than 13. This method was created to account for the adding/dropping of players because your lineup
+	# is affected in the future if you add/drop a player
 	def getNumOfRows(self):
 		driver = self.driver
 		wait = WebDriverWait(driver, 10)
@@ -101,6 +113,7 @@ class fntsyLu(unittest.TestCase):
 			pass
 		return len(rows) - 1
 
+	# Sets the player list in the order that the page was loaded.
 	def setPlayerList(self):
 		driver = self.driver
 		elements = driver.find_elements_by_class_name("playertablePlayerName")
@@ -113,7 +126,8 @@ class fntsyLu(unittest.TestCase):
 		playerList = []
 		for d in range(0, len(digits), 1):
 			playerList.insert(d, digits[d])  
-				
+	
+	# Returns a list of players who are on the bench AND have a game scheduled.			
 	def getBenchList(self):
 		benchPlayerList = []
 		benchPlayerGameStatuses = []
@@ -138,13 +152,14 @@ class fntsyLu(unittest.TestCase):
 			count += 1;
 		return benchPlayerList
 
+	# Sends email notifiying user that the script was unable to add players with games scheduled to the starting lineup
 	def sendEmail(self, players):
 		emailServer = smtplib.SMTP('smtp.gmail.com', 587)
 		emailServer.ehlo()
 		emailServer.starttls()
-		email = ""   		# Insert email you created here
-		password = ""		# Insert password for email here
-		recipientEmail = "" # Insert your personal email here
+		email = ""   			      # Insert email you created here
+		password = ""				  # Insert password for email here
+		recipientEmail = "" 		  # Insert your personal email here
 		emailServer.login(email, password)
 		str = ""
 		for i in range(0, len(players), 1):
@@ -158,6 +173,8 @@ class fntsyLu(unittest.TestCase):
 			'Subject: FANTASY LINEUP ISSUE in ' + self.getLeagueName() + '\n' + emailBody)
 		emailServer.quit()
 
+	# Checks if the here button was clicked and a player's move to the starting lineup was finalized. If not, the player's move button
+	# is reclicked and stays put.
 	def clickHereOnPosition(self, num, num2, count):
 		driver = self.driver
 		wait = WebDriverWait(driver, 10)
@@ -184,6 +201,7 @@ class fntsyLu(unittest.TestCase):
 			return True
 		return False
 
+	# Checks if a player has been moved to a row corresponding to his position. 
 	def toPosition(self, positionList, num):
 		count = 0
 		for i in range(0, len(positionList), 1):
@@ -215,21 +233,15 @@ class fntsyLu(unittest.TestCase):
 					pass
 		return False
 
-	def submitLineUp(self):
-		driver = self.driver
-		wait = WebDriverWait(driver, 10)
-		submit = "//*[@id='pncSaveRoster0']"
-		submitElement = wait.until(lambda driver: driver.find_element_by_xpath(submit))
-		submitElement.click()
-		time.sleep(2)
-		self.setPlayerList()
-
+	# If player could not be moved into one of the UTIL rows, a player is moved to the starting lineup. This method initializes
+	# a player's position list and checks each row corresponding to his positions.
 	def toSL(self, num):
 		driver = self.driver
 		wait = WebDriverWait(driver, 10)
 		positionList = self.getPosition(num)
 		return self.toPosition(positionList, num)
 
+	# Clicks the 'here' buttons and finalizes that the player is moved into the starting lineup.
 	def clickHereOnUtil(self, str, str2, num, num2):
 		driver = self.driver 
 		wait = WebDriverWait(driver, 10)
@@ -242,6 +254,7 @@ class fntsyLu(unittest.TestCase):
 			return True
 		return False
 
+	# Initialized strings for selenium to find the options a player could be moved to, the 'here' buttons.
 	def initializeHereStrings(self, num):
 		stringList = []
 		playerRow = "pncPlayerRow_" + self.getNumber(num)
@@ -251,6 +264,7 @@ class fntsyLu(unittest.TestCase):
 		stringList = [playerRowGameStatus, playerRowButton]
 		return stringList
 
+	# Moves player to the UTIL 
 	def toUtil(self, num):
 		driver = self.driver
 		wait = WebDriverWait(driver, 10)
@@ -262,6 +276,7 @@ class fntsyLu(unittest.TestCase):
 				pass
 		return
 
+	# Initializes the strings in order for selenium the find the web element for a player's move button. 
 	def initializeMoveStrings(self, num, num2):
 		stringList = []
 		playerRow = "pncPlayerRow_" + self.getNumber(num)
@@ -271,6 +286,7 @@ class fntsyLu(unittest.TestCase):
 		stringList = [playerRowGameStatus, playerRowButton]
 		return stringList
 
+	# Clicks the player's move button 
 	def movePlayer(self, str, str2, num):
 		driver = self.driver
 		wait = WebDriverWait(driver, 10)
@@ -286,6 +302,17 @@ class fntsyLu(unittest.TestCase):
 		else:
 			pass
 
+	# Clicks the submit lineup button. 
+	def submitLineUp(self):
+		driver = self.driver
+		wait = WebDriverWait(driver, 10)
+		submit = "//*[@id='pncSaveRoster0']"
+		submitElement = wait.until(lambda driver: driver.find_element_by_xpath(submit))
+		submitElement.click()
+		time.sleep(2)
+		self.setPlayerList()
+
+	# Checks the bench and sees if there are players with games scheduled.
 	def checkBench(self):
 		driver = self.driver
 		wait = WebDriverWait(driver, 10)
@@ -298,6 +325,7 @@ class fntsyLu(unittest.TestCase):
 			rowStrings = self.initializeMoveStrings(i, num)
 			self.movePlayer(rowStrings[0], rowStrings[1], num)
 
+	# Checks the three UTIL rows to see if they could be moved into the starting lineup. 
 	def checkUtil(self):
 		self.submitLineUp()
 		for i in range(7, 10, 1):
@@ -306,6 +334,7 @@ class fntsyLu(unittest.TestCase):
 			self.movePlayer(utilStrings[0], utilStrings[1], num)
 		self.checkBench()
 
+	# Clicks login button on ESPN Fantasy homepage and inserts your account info.
 	def login(self):
 		# initialize variables
 		driver = self.driver
@@ -339,7 +368,7 @@ class fntsyLu(unittest.TestCase):
 		
 		# click log in button
 		loginButtonXpath2 = "//*[@id='did-ui']/div/div/section/section/form/section/div[3]/button"
-		loginButtonElement2 = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(loginButtonXpath2))
+		loginButtonElement2 = wait.until(lambda driver: driver.find_element_by_xpath(loginButtonXpath2))
 		loginButtonElement2.click()
 
 		leagueID = str(self.LEAGUEID)
@@ -357,7 +386,6 @@ class fntsyLu(unittest.TestCase):
 		time.sleep(2)
 		driver = self.driver
 		wait = WebDriverWait(driver, 10)
-		time.sleep(2)
 		self.setPlayerList()
 		self.checkBench()
 		benchList = self.getBenchList()
