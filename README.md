@@ -44,6 +44,6 @@ Next, you can set up cron to run the command for you. In the terminal, type
  > crontab -e 
 
 And enter the following at the bottom of the crontab file:
- > 0 11 * * * export DISPLAY=:99; /usr/bin/python /path/to/fntsylu.py 'insert league id' 'insert team id'
+ > 0 11 * * * export DISPLAY=:0; /usr/bin/python /path/to/fntsylu.py 'insert league id' 'insert team id'
 
 For the example line above, cron will run the script every day at 11. 
