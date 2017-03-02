@@ -9,7 +9,6 @@ import unittest
 import time
 import re
 
-
 class fntsyLu(unittest.TestCase):
 	# Sets up the chrome driver
 	def setUp(self):
@@ -129,6 +128,7 @@ class fntsyLu(unittest.TestCase):
 	
 	# Returns a list of players who are on the bench AND have a game scheduled.			
 	def getBenchList(self):
+		self.setPlayerList()
 		benchPlayerList = []
 		benchPlayerGameStatuses = []
 		count = 0
@@ -158,19 +158,26 @@ class fntsyLu(unittest.TestCase):
 		emailServer.ehlo()
 		emailServer.starttls()
 		email = ""   			      # Insert email you created here
-		password = ""				  # Insert password for email here
-		recipientEmail = "" 		  # Insert your personal email here
+		password = ""				  		  # Insert password for email here
+		recipientEmail = "" # Insert your personal email here
 		emailServer.login(email, password)
-		str = ""
-		for i in range(0, len(players), 1):
-			str += players[i]
-			if i != len(players) - 1:
-				str += ", "
-		emailBody = emailBody = '\nHey ' + self.getOwnerName() + ', there was an issue with setting your lineup for ' + self.getTeamName() + '. Could not get ' + str + ' into your starting lineup even though he has a game.'
+		emailBody = emailBody = '\nHey ' + self.getOwnerName() + ', there was an issue with setting your lineup for ' + self.getTeamName() + '. Could not get ' + str(len(players)) + ' player into your starting lineup even though he has a game.'
 		if len(players) > 1:
-			emailBody = '\nHey ' + self.getOwnerName() + ', there was an issue with setting your lineup for ' + self.getTeamName() + '. Could not get ' + str + ' into your starting lineup even though they have games.'
+			emailBody = '\nHey ' + self.getOwnerName() + ', there was an issue with setting your lineup for ' + self.getTeamName() + '. Could not get ' + str(len(players)) + ' players into your starting lineup even though they have games.'
 		emailServer.sendmail(email, recipientEmail,
 			'Subject: FANTASY LINEUP ISSUE in ' + self.getLeagueName() + '\n' + emailBody)
+		emailServer.quit()
+
+	def sendErrorEmail(self):
+		emailServer = smtplib.SMTP('smtp.gmail.com', 587)
+		emailServer.ehlo()
+		emailServer.starttls()
+		email = ""   			      # Insert email you created here
+		password = ""				  		  # Insert password for email here
+		recipientEmail = "" # Insert your personal email here
+		emailServer.login(email, password)
+		emailBody = "\nThere was an error in the script. Unable to set your line up."
+		emailServer.sendmail(email, recipientEmail, 'Subject: SCRIPT ERROR in ' + self.getLeagueName() + '\n' + emailBody)
 		emailServer.quit()
 
 	# Checks if the here button was clicked and a player's move to the starting lineup was finalized. If not, the player's move button
@@ -367,16 +374,17 @@ class fntsyLu(unittest.TestCase):
 		passFieldElement.send_keys(password)
 		
 		# click log in button
-		loginButtonXpath2 = "//*[@id='did-ui']/div/div/section/section/form/section/div[3]/button"
+		loginButtonXpath2 = "//*[@id='did-ui']/div/div/section/section/form/section/div[3]/button[2]"
 		loginButtonElement2 = wait.until(lambda driver: driver.find_element_by_xpath(loginButtonXpath2))
 		loginButtonElement2.click()
 
 		leagueID = str(self.LEAGUEID)
 		teamID = str(self.TEAMID)
 		leagueURL = "http://games.espn.com/fba/clubhouse?leagueId=" + leagueID + "&teamId=" + teamID + "&seasonId=2017"
-		time.sleep(2)
+		print leagueURL
+		time.sleep(4)
 		driver.get(leagueURL)
-		time.sleep(2)
+		time.sleep(4)
 
 	def tearDown(self):
 		self.driver.quit()
