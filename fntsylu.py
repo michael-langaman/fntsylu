@@ -157,8 +157,8 @@ class fntsyLu(unittest.TestCase):
 		emailServer = smtplib.SMTP('smtp.gmail.com', 587)
 		emailServer.ehlo()
 		emailServer.starttls()
-		email = ""   			      # Insert email you created here
-		password = ""				  		  # Insert password for email here
+		email = ""   		# Insert email you created here
+		password = "" 		# Insert password for email here
 		recipientEmail = "" # Insert your personal email here
 		emailServer.login(email, password)
 		emailBody = emailBody = '\nHey ' + self.getOwnerName() + ', there was an issue with setting your lineup for ' + self.getTeamName() + '. Could not get ' + str(len(players)) + ' player into your starting lineup even though he has a game.'
@@ -345,8 +345,8 @@ class fntsyLu(unittest.TestCase):
 	def login(self):
 		# initialize variables
 		driver = self.driver
-		username = "" 		# Insert your username here
-		password = ""		# Insert your password here
+		username = "" 							# Insert your username here
+		password = ""							# Insert your password here
 		wait = WebDriverWait(driver, 10)
 
 		# click Log In button
@@ -380,7 +380,8 @@ class fntsyLu(unittest.TestCase):
 
 		leagueID = str(self.LEAGUEID)
 		teamID = str(self.TEAMID)
-		leagueURL = "http://games.espn.com/fba/clubhouse?leagueId=" + leagueID + "&teamId=" + teamID + "&seasonId=2017"
+		seasonID = str(self.SEASONID)
+		leagueURL = "http://games.espn.com/fba/clubhouse?leagueId=" + leagueID + "&teamId=" + teamID + "&seasonId=" + seasonID
 		print leagueURL
 		time.sleep(4)
 		driver.get(leagueURL)
@@ -417,6 +418,7 @@ class fntsyLu(unittest.TestCase):
 
 if __name__ == '__main__':
 	if len(sys.argv) > 1:
+		fntsyLu.SEASONID = sys.argv.pop()
 		fntsyLu.TEAMID = sys.argv.pop()
 		fntsyLu.LEAGUEID = sys.argv.pop()
 	unittest.main()
