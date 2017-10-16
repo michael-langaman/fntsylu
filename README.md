@@ -34,7 +34,7 @@ Here's an example of correct command:
  > python fntsylu.py 7609 18
 
 '7609' is the ID of the league that I want to enter. '18' is the team ID. You can find your league and team ID by reading the url of the homepage of your fantasy league. Once you find your league and team IDs, go to your command line and change directory to the fntsylu folder, then type the following:
- > python fntsylu.py 'Insert your league ID here' 'Insert your team ID here'
+ > python fntsylu.py 'Insert your league ID here' 'Insert your team ID here' 'Insert your season ID here (current year)'
 
 Chrome should open up and the script should be setting your lineup
 
@@ -44,6 +44,6 @@ Next, you can set up cron to run the command for you. In the terminal, type
  > crontab -e 
 
 And enter the following at the bottom of the crontab file:
- > 0 11 * * * export DISPLAY=:0; /usr/bin/python /path/to/fntsylu.py 'insert league id' 'insert team id'
+ > 0 11 * * * export DISPLAY=:0; /usr/bin/python /path/to/fntsylu.py 'insert league id' 'insert team id' 'insert season id'
 
 For the example line above, cron will run the script every day at 11. 
