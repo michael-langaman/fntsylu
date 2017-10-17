@@ -3,7 +3,7 @@ ESPN Fantasy Basketball Daily Lineup Automator
 
 This is my script to set my ESPN Fantasy Basketball lineup daily. Not fully automative as it does not add players off 
 the bench and into the starting lineup if all the spots are taken, and of course, the players in those spots have games.
-In that case, the script sends me an email amount of players who were unable to be added to the lineup.
+In that case, the script sends me an email with the amount of players who were unable to be added to the lineup.
 
 # How to use
 
