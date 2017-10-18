@@ -4,6 +4,7 @@ import sys
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import WebDriverException
 import smtplib
 import unittest
 import time
@@ -24,6 +25,18 @@ class fntsyLu(unittest.TestCase):
 		playerNum = re.findall('\d+', str)
 		return playerNum[0]
 	
+	def sendErrorEmail(self, emailBody):
+		emailServer = smtplib.SMTP('smtp.gmail.com', 587)
+		emailServer.ehlo()
+		emailServer.starttls()
+		email = ""					# Insert email you created here
+		password = ""				# Insert password for email here
+		recipientEmail = "" 		# Insert your personal email here
+		emailServer.login(email, password)
+		# emailBody = "\nThere was an error in the script. Unable to set your line up."
+		emailServer.sendmail(email, recipientEmail, 'Subject: SCRIPT ERROR in ' + self.getLeagueName() + '\n' + emailBody)
+		emailServer.quit()
+
 	# Returns the list of positions of a player
 	def getPosition(self, num):
 		driver = self.driver
@@ -54,6 +67,7 @@ class fntsyLu(unittest.TestCase):
 		wait = WebDriverWait(driver, 10)
 		nameElement = wait.until(lambda driver: driver.find_element_by_xpath(str))
 		name = nameElement.get_attribute('text')
+
 		return name
 
 	# Returns the owner of the team's name
@@ -63,6 +77,7 @@ class fntsyLu(unittest.TestCase):
 		ownerNameElement = wait.until(lambda driver: driver.find_element_by_xpath('//*[@id="content"]/div/div[4]/div/div/div[3]/div[1]/div[2]/div[1]/ul[2]/li[1]'))
 		ownerNameHTML = ownerNameElement.get_attribute('outerHTML')
 		ownerName = ownerNameHTML.split('>', 1)[1].split('<', 1)[0].split(' ', 1)[0]
+
 		return ownerName
 
 	# Returns name of the team
@@ -73,30 +88,31 @@ class fntsyLu(unittest.TestCase):
 		teamNameHTML = teamNameElement.get_attribute('innerHTML')
 		teamName = teamNameHTML.split('<e', 1)[0]
 		teamName.replace(' ', '')
+
 		return teamName
 
 	# Returns league name
 	def getLeagueName(self):
 		driver = self.driver
 		wait = WebDriverWait(driver, 10)
+
 		leagueNameElement = wait.until(lambda driver: driver.find_element_by_xpath('//*[@id="content"]/div/div[4]/div/div/div[3]/div[1]/div[2]/div[1]/ul[1]/li/a'))
 		leagueNameHTML = leagueNameElement.get_attribute('innerHTML')
 		leagueName = leagueNameHTML.split('<strong>', 1)[1].split('</strong>', 1)[0]
+
 		return leagueName
 
 	# Checks is row 13 is an Injury-Reserve row. 
 	def checkRow13(self):
 		driver = self.driver
 		wait = WebDriverWait(driver, 10)
-		try:
-			ir = '//*[@id="pncSlot_13"]'
-			irElement = wait.until(lambda driver : driver.find_element_by_xpath(ir))
-			irHTML = irElement.get_attribute('outerHTML')
-			findIR = re.findall('IR', irHTML)
-			if len(findIR) > 0:
-				return True
-		except TimeoutException:
-			return False 
+
+		ir = '//*[@id="pncSlot_13"]'
+		irElement = wait.until(lambda driver : driver.find_element_by_xpath(ir))
+		irHTML = irElement.get_attribute('outerHTML')
+		findIR = re.findall('IR', irHTML)
+		if len(findIR) > 0:
+			return True
 		return False
 
 	# Returns the num of rows. Will most likely return 13, but if there are more than 3 players on the bench the number will
@@ -105,7 +121,9 @@ class fntsyLu(unittest.TestCase):
 	def getNumOfRows(self):
 		driver = self.driver
 		wait = WebDriverWait(driver, 10)
+
 		rows = wait.until(lambda driver: driver.find_elements_by_class_name("playerEditSlot"))
+
 		if(len(rows) - 1 == 14) and self.checkRow13():
 			return len(rows) - 2
 		else:
@@ -157,27 +175,15 @@ class fntsyLu(unittest.TestCase):
 		emailServer = smtplib.SMTP('smtp.gmail.com', 587)
 		emailServer.ehlo()
 		emailServer.starttls()
-		email = ""   		# Insert email you created here
-		password = "" 		# Insert password for email here
-		recipientEmail = "" # Insert your personal email here
+		email = ""   			# Insert email you created here
+		password = "" 			# Insert password for email here
+		recipientEmail = "" 	# Insert your personal email here
 		emailServer.login(email, password)
 		emailBody = emailBody = '\nHey ' + self.getOwnerName() + ', there was an issue with setting your lineup for ' + self.getTeamName() + '. Could not get ' + str(len(players)) + ' player into your starting lineup even though he has a game.'
 		if len(players) > 1:
 			emailBody = '\nHey ' + self.getOwnerName() + ', there was an issue with setting your lineup for ' + self.getTeamName() + '. Could not get ' + str(len(players)) + ' players into your starting lineup even though they have games.'
 		emailServer.sendmail(email, recipientEmail,
 			'Subject: FANTASY LINEUP ISSUE in ' + self.getLeagueName() + '\n' + emailBody)
-		emailServer.quit()
-
-	def sendErrorEmail(self):
-		emailServer = smtplib.SMTP('smtp.gmail.com', 587)
-		emailServer.ehlo()
-		emailServer.starttls()
-		email = ""   			      # Insert email you created here
-		password = ""				  		  # Insert password for email here
-		recipientEmail = "" # Insert your personal email here
-		emailServer.login(email, password)
-		emailBody = "\nThere was an error in the script. Unable to set your line up."
-		emailServer.sendmail(email, recipientEmail, 'Subject: SCRIPT ERROR in ' + self.getLeagueName() + '\n' + emailBody)
 		emailServer.quit()
 
 	# Checks if the here button was clicked and a player's move to the starting lineup was finalized. If not, the player's move button
@@ -276,7 +282,7 @@ class fntsyLu(unittest.TestCase):
 		driver = self.driver
 		wait = WebDriverWait(driver, 10)
 		for i in range(7, 10, 1):
-			utilHereStrings = self.initializeHereStrings(i)
+			utilHereStrings = self.initializeHereStrings(i) 
 			if self.clickHereOnUtil(utilHereStrings[0], utilHereStrings[1], num, i):
 				return
 			else:
@@ -299,6 +305,7 @@ class fntsyLu(unittest.TestCase):
 		wait = WebDriverWait(driver, 10)
 		if self.hasGame(str):
 			buttonElement = wait.until(lambda driver: driver.find_element_by_xpath(str2))
+			time.sleep(2)
 			buttonElement.click()
 			if self.getNumOfRows() > 13 and num > self.getNumOfRows() - 13:
 				self.toUtil(num)
@@ -345,8 +352,8 @@ class fntsyLu(unittest.TestCase):
 	def login(self):
 		# initialize variables
 		driver = self.driver
-		username = "" 							# Insert your username here
-		password = ""							# Insert your password here
+		username = "" 		# Insert your username here
+		password = ""		# Insert your password here
 		wait = WebDriverWait(driver, 10)
 
 		# click Log In button
@@ -382,10 +389,12 @@ class fntsyLu(unittest.TestCase):
 		teamID = str(self.TEAMID)
 		seasonID = str(self.SEASONID)
 		leagueURL = "http://games.espn.com/fba/clubhouse?leagueId=" + leagueID + "&teamId=" + teamID + "&seasonId=" + seasonID
-		print leagueURL
+		# print leagueURL
 		time.sleep(4)
 		driver.get(leagueURL)
 		time.sleep(4)
+
+		driver.execute_script("window.scrollTo(0, 500);")
 
 	def tearDown(self):
 		self.driver.quit()
@@ -411,7 +420,7 @@ class fntsyLu(unittest.TestCase):
 			self.sendEmail(newBenchList)
 		else:
 			pass
-
+		# self.sendEmail(benchList)
 		self.submitLineUp()
 		time.sleep(2)
 		self.tearDown()
