@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python3
 
 import sys
 from selenium import webdriver
@@ -25,17 +25,17 @@ class fntsyLu(unittest.TestCase):
 		playerNum = re.findall('\d+', str)
 		return playerNum[0]
 	
-	def sendErrorEmail(self, emailBody):
-		emailServer = smtplib.SMTP('smtp.gmail.com', 587)
-		emailServer.ehlo()
-		emailServer.starttls()
-		email = ""					# Insert email you created here
-		password = ""				# Insert password for email here
-		recipientEmail = "" 		# Insert your personal email here
-		emailServer.login(email, password)
-		# emailBody = "\nThere was an error in the script. Unable to set your line up."
-		emailServer.sendmail(email, recipientEmail, 'Subject: SCRIPT ERROR in ' + self.getLeagueName() + '\n' + emailBody)
-		emailServer.quit()
+	# def sendErrorEmail(self, emailBody):
+	# 	emailServer = smtplib.SMTP('smtp.gmail.com', 587)
+	# 	emailServer.ehlo()
+	# 	emailServer.starttls()
+	# 	email = "fntsylu@gmail.com"							# Insert email you created here
+	# 	password = "fntsyLU123"								# Insert password for email here
+	# 	recipientEmail = "langaman.michael@gmail.com" 		# Insert your personal email here
+	# 	emailServer.login(email, password)
+	# 	# emailBody = "\nThere was an error in the script. Unable to set your line up."
+	# 	emailServer.sendmail(email, recipientEmail, 'Subject: SCRIPT ERROR in ' + self.getLeagueName() + '\n' + emailBody)
+	# 	emailServer.quit()
 
 	# Returns the list of positions of a player
 	def getPosition(self, num):
@@ -142,7 +142,7 @@ class fntsyLu(unittest.TestCase):
 		global playerList
 		playerList = []
 		for d in range(0, len(digits), 1):
-			playerList.insert(d, digits[d])  
+			playerList.insert(d, digits[d]) 
 	
 	# Returns a list of players who are on the bench AND have a game scheduled.			
 	def getBenchList(self):
@@ -150,7 +150,7 @@ class fntsyLu(unittest.TestCase):
 		benchPlayerList = []
 		benchPlayerGameStatuses = []
 		count = 0
-		for i in range(10, 13, 1):
+		for i in range(10, len(playerList), 1):
 			str = "pncPlayerRow_" + self.getNumber(i)
 			playerGameStatus = "//*[@id=" + "\'" + str + "\'" + "]/td[6]/a"
 			benchPlayerGameStatuses.insert(count, self.hasGame(playerGameStatus))
@@ -175,9 +175,9 @@ class fntsyLu(unittest.TestCase):
 		emailServer = smtplib.SMTP('smtp.gmail.com', 587)
 		emailServer.ehlo()
 		emailServer.starttls()
-		email = ""   			# Insert email you created here
-		password = "" 			# Insert password for email here
-		recipientEmail = "" 	# Insert your personal email here
+		email = ""   					# Insert email you created here
+		password = "" 					# Insert password for email here
+		recipientEmail = "" 			# Insert your personal email here
 		emailServer.login(email, password)
 		emailBody = emailBody = '\nHey ' + self.getOwnerName() + ', there was an issue with setting your lineup for ' + self.getTeamName() + '. Could not get ' + str(len(players)) + ' player into your starting lineup even though he has a game.'
 		if len(players) > 1:
@@ -336,6 +336,7 @@ class fntsyLu(unittest.TestCase):
 				num = i - x
 			else:
 				num = i
+
 			rowStrings = self.initializeMoveStrings(i, num)
 			self.movePlayer(rowStrings[0], rowStrings[1], num)
 
@@ -352,8 +353,8 @@ class fntsyLu(unittest.TestCase):
 	def login(self):
 		# initialize variables
 		driver = self.driver
-		username = "" 		# Insert your username here
-		password = ""		# Insert your password here
+		username = "" 					# Insert your username here
+		password = ""					# Insert your password here
 		wait = WebDriverWait(driver, 10)
 
 		# click Log In button
@@ -405,6 +406,7 @@ class fntsyLu(unittest.TestCase):
 		driver = self.driver
 		wait = WebDriverWait(driver, 10)
 		self.setPlayerList()
+		# print len(playerList)
 		self.checkBench()
 		benchList = self.getBenchList()
 		if len(benchList) > 0:
