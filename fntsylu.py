@@ -24,18 +24,6 @@ class fntsyLu(unittest.TestCase):
 		str = elements[num].get_attribute('id')
 		playerNum = re.findall('\d+', str)
 		return playerNum[0]
-	
-	# def sendErrorEmail(self, emailBody):
-	# 	emailServer = smtplib.SMTP('smtp.gmail.com', 587)
-	# 	emailServer.ehlo()
-	# 	emailServer.starttls()
-	# 	email = "fntsylu@gmail.com"							# Insert email you created here
-	# 	password = "fntsyLU123"								# Insert password for email here
-	# 	recipientEmail = "langaman.michael@gmail.com" 		# Insert your personal email here
-	# 	emailServer.login(email, password)
-	# 	# emailBody = "\nThere was an error in the script. Unable to set your line up."
-	# 	emailServer.sendmail(email, recipientEmail, 'Subject: SCRIPT ERROR in ' + self.getLeagueName() + '\n' + emailBody)
-	# 	emailServer.quit()
 
 	# Returns the list of positions of a player
 	def getPosition(self, num):
