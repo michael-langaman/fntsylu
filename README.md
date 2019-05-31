@@ -1,4 +1,9 @@
 # fntsylu
+
+# Does not work anymore because ESPN changed their website.
+
+=========================================================================================================================================
+
 ESPN Fantasy Basketball Daily Lineup Automator
 
 This is my script to set my ESPN Fantasy Basketball lineup daily. Not fully automative as it does not add players off 
